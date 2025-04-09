@@ -10,6 +10,7 @@
   --link-color: #64ffda;       /* Teal for links */
   --link-hover: #4ad8b9;       /* Darker teal for link hover */
   --card-shadow: 0 10px 30px -15px rgba(2, 12, 27, 0.7);
+  --overlay-bg: rgba(10, 25, 47, 0.9); /* Background for modals/overlays */
 }
 
 /* General Styles */
@@ -309,23 +310,22 @@ nav ul li a:hover::after {
   transform: translateY(-5px);
 }
 
-/* Flip hint style */
+/* Flip hint style - updated for click instead of hover */
 .flip-hint {
   position: absolute;
   bottom: 15px;
   right: 15px;
   color: var(--accent-color);
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   opacity: 0.8;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .flip-hint i {
-  animation: rotate 4s linear infinite;
-}
-
-.experience-card:hover .flip-hint {
-  opacity: 0;
+  animation: pulse 2s linear infinite;
 }
 
 /* Experience Section */
@@ -337,7 +337,7 @@ nav ul li a:hover::after {
 
 .experience-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
 }
 
@@ -347,9 +347,15 @@ nav ul li a:hover::after {
   box-shadow: var(--card-shadow);
   height: 280px;
   position: relative;
-  perspective: 1500px;
+  cursor: pointer;
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.experience-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px -15px rgba(2, 12, 27, 0.8);
 }
 
 .experience-card:nth-child(1) { animation-delay: 0.1s; }
@@ -357,7 +363,7 @@ nav ul li a:hover::after {
 .experience-card:nth-child(3) { animation-delay: 0.3s; }
 .experience-card:nth-child(4) { animation-delay: 0.4s; }
 
-.experience-front, .experience-back {
+.experience-front {
   position: absolute;
   top: 0;
   left: 0;
@@ -368,57 +374,94 @@ nav ul li a:hover::after {
   flex-direction: column;
   justify-content: center;
   border-radius: 10px;
-  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  backface-visibility: hidden;
-}
-
-.experience-front {
   background: var(--secondary-bg);
   border-left: 3px solid var(--accent-color);
-  transform: rotateY(0deg);
-  z-index: 2;
 }
 
-.experience-back {
+/* New Experience Details Container */
+#experienceDetailsContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--overlay-bg);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  padding: 20px;
+}
+
+#experienceDetailsContainer.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.experience-details-card {
   background: var(--card-bg);
-  transform: rotateY(180deg);
-  text-align: left;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--card-shadow);
+  position: relative;
+  animation: scaleIn 0.3s ease forwards;
+}
+
+.details-header {
+  background: var(--secondary-bg);
+  padding: 25px 30px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-left: 3px solid var(--accent-color);
+  position: relative;
+}
+
+.details-header h3 {
+  color: var(--accent-color);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.details-content {
   padding: 30px;
-  z-index: 1;
 }
 
-.experience-card:hover .experience-front {
-  transform: rotateY(-180deg);
+.details-content p {
+  margin-bottom: 15px;
+  position: relative;
+  padding-left: 25px;
+  text-align: left;
+  line-height: 1.5;
 }
 
-.experience-card:hover .experience-back {
-  transform: rotateY(0deg);
-}
-
-/* Project flip hint - different animation */
-.project-flip-hint {
-  right: 15px;
-  bottom: 15px;
-}
-
-.project-flip-hint i {
-  animation: pulse 2s ease-in-out infinite;
+.details-content p i {
+  position: absolute;
+  left: 0;
+  top: 4px;
   color: var(--accent-color);
 }
 
-@keyframes pulse {
-  0% { 
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  50% { 
-    transform: scale(1.3);
-    opacity: 1;
-  }
-  100% { 
-    transform: scale(1);
-    opacity: 0.7;
-  }
+.close-details {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: var(--accent-color);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-details:hover {
+  transform: rotate(90deg);
 }
 
 .experience-front h3 {
@@ -431,69 +474,6 @@ nav ul li a:hover::after {
   margin-bottom: 5px;
 }
 
-.experience-back p {
-  margin-bottom: 15px;
-  position: relative;
-  padding-left: 25px;
-  text-align: left;
-  line-height: 1.5;
-  font-size: 0.95rem;
-}
-
-.experience-back p i {
-  position: absolute;
-  left: 0;
-  top: 4px;
-  color: var(--accent-color);
-}
-
-.experience-card.is-flipped .experience-front {
-  transform: rotateY(-180deg);
-}
-
-.experience-card.is-flipped .experience-back {
-  transform: rotateY(0deg);
-}
-
-/* Education Section */
-.education-section {
-  background: var(--secondary-bg);
-  position: relative;
-}
-
-.education-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.education-card {
-  background: var(--card-bg);
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: var(--card-shadow);
-  transition: all 0.5s ease;
-  border-left: 3px solid var(--accent-color);
-  opacity: 0;
-  animation: fadeInRight 0.8s ease-out forwards;
-}
-
-.education-card:nth-child(1) { animation-delay: 0.1s; }
-.education-card:nth-child(2) { animation-delay: 0.3s; }
-
-.education-card:hover {
-  transform: translateY(-10px) translateX(5px);
-  box-shadow: 0 15px 40px -15px rgba(2, 12, 27, 0.8);
-}
-
-.education-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  color: var(--accent-color);
-}
-
 /* Projects Section */
 .projects-section {
   position: relative;
@@ -502,7 +482,7 @@ nav ul li a:hover::after {
 
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 40px;
 }
 
@@ -516,6 +496,7 @@ nav ul li a:hover::after {
   perspective: 1500px;
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
+  cursor: pointer;
 }
 
 .project-card:nth-child(1) { animation-delay: 0.2s; }
@@ -553,11 +534,11 @@ nav ul li a:hover::after {
   z-index: 1;
 }
 
-.project-card:hover .project-front {
+.project-card.is-flipped .project-front {
   transform: rotateX(-180deg);
 }
 
-.project-card:hover .project-back {
+.project-card.is-flipped .project-back {
   transform: rotateX(0deg);
 }
 
@@ -583,22 +564,12 @@ nav ul li a:hover::after {
   color: var(--accent-color);
 }
 
-.project-card.is-flipped .project-front {
-  transform: rotateX(-180deg);
-}
-
-.project-card.is-flipped .project-back {
-  transform: rotateX(0deg);
-}
-
-.project-card:hover .flip-hint {
-  opacity: 0;
-}
-
 .project-links {
   display: flex;
   gap: 15px;
   margin-top: 20px;
+  z-index: 3; /* Ensure links are clickable */
+  position: relative;
 }
 
 .project-links a {
@@ -836,6 +807,32 @@ footer p {
   to { transform: rotate(360deg); }
 }
 
+@keyframes pulse {
+  0% { 
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Particle Animation */
 @keyframes floatParticle {
   0% { transform: translate(0, 0); }
@@ -856,7 +853,7 @@ footer p {
 /* Responsive Design */
 @media (max-width: 1024px) {
   .experience-grid, .projects-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
   
   section {
@@ -899,36 +896,28 @@ footer p {
     min-height: 220px;
   }
   
-  .experience-front, .project-front {
-    transform: rotateY(0deg) rotateX(0deg);
+  /* Adjust for mobile display */
+  .experience-details-card {
+    max-height: 90vh;
+    width: 95%;
   }
   
-  .experience-back {
-    transform: rotateY(180deg);
+  .details-header {
+    padding: 20px;
   }
   
-  .project-back {
-    transform: rotateX(180deg);
+  .details-content {
+    padding: 20px;
   }
   
-  .experience-card.is-flipped .experience-front {
-    transform: rotateY(-180deg);
+  /* Fix grid layout for small screens */
+  .experience-grid, .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
   
-  .experience-card.is-flipped .experience-back {
-    transform: rotateY(0deg);
-  }
-  
-  .project-card.is-flipped .project-front {
-    transform: rotateX(-180deg);
-  }
-  
-  .project-card.is-flipped .project-back {
-    transform: rotateX(0deg);
-  }
-  
-  .flip-hint:after {
-    content: '';
+  .skills-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -939,10 +928,7 @@ footer p {
   
   .container {
     width: 95%;
-  }
-  
-  .skills-grid {
-    grid-template-columns: 1fr;
+    padding: 0 10px;
   }
   
   .profile-photo {
@@ -959,8 +945,38 @@ footer p {
     font-size: 2rem;
   }
   
-  .experience-back p, .project-back p {
+  .experience-front h3, .project-front h3 {
+    font-size: 1.3rem;
+  }
+  
+  .experience-front p, .project-front p {
     font-size: 0.9rem;
-    margin-bottom: 12px;
+  }
+  
+  .details-content p {
+    font-size: 0.9rem;
+  }
+  
+  /* Ensure touch targets are large enough */
+  .flip-hint {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Make cards more compact on very small screens */
+  .experience-card, .project-card {
+    min-height: 200px;
+  }
+  
+  /* Ensure the mobile menu is usable */
+  nav ul li {
+    padding: 10px 0;
+  }
+  
+  nav h1 {
+    font-size: 1.2rem;
   }
 }

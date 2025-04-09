@@ -75,59 +75,71 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Detect if device is mobile
-  const isMobile = window.innerWidth <= 768;
-  
-  // Enhanced Experience cards with horizontal flip animation (Y-axis rotation)
+  // Handle Experience cards with click to show details
   const experienceCards = document.querySelectorAll('.experience-card');
+  const experienceDetailsContainer = document.getElementById('experienceDetailsContainer');
   
   experienceCards.forEach(card => {
-    // For mobile devices - click to flip
-    if (isMobile) {
-      card.addEventListener('click', function() {
-        experienceCards.forEach(otherCard => {
-          if (otherCard !== card && otherCard.classList.contains('is-flipped')) {
-            otherCard.classList.remove('is-flipped');
-          }
-        });
-        this.classList.toggle('is-flipped');
-      });
-    } else {
-      // For desktop - hover to flip
-      card.addEventListener('mouseenter', function() {
-        this.classList.add('is-flipped');
-      });
+    // Remove any hover effects, now only click will trigger
+    card.addEventListener('click', function() {
+      const title = this.querySelector('.experience-front h3').textContent;
+      const company = this.querySelector('.experience-front p:nth-of-type(1)').textContent;
+      const period = this.querySelector('.experience-front p:nth-of-type(2)').textContent;
+      const detailPoints = Array.from(this.querySelectorAll('.experience-back p')).map(p => p.innerHTML);
       
-      card.addEventListener('mouseleave', function() {
-        this.classList.remove('is-flipped');
-      });
-    }
+      // Show experience details
+      if (experienceDetailsContainer) {
+        // Create details content
+        experienceDetailsContainer.innerHTML = `
+          <div class="experience-details-card">
+            <div class="details-header">
+              <h3>${title}</h3>
+              <p>${company}</p>
+              <p>${period}</p>
+              <button class="close-details"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="details-content">
+              ${detailPoints.map(point => `<p>${point}</p>`).join('')}
+            </div>
+          </div>
+        `;
+        
+        experienceDetailsContainer.classList.add('show');
+        
+        // Add close button functionality
+        const closeBtn = experienceDetailsContainer.querySelector('.close-details');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            experienceDetailsContainer.classList.remove('show');
+          });
+        }
+      }
+    });
   });
   
-  // Enhanced Project cards with vertical flip animation (X-axis rotation)
+  // Handle Project cards with click to flip
   const projectCards = document.querySelectorAll('.project-card');
   
   projectCards.forEach(card => {
-    // For mobile devices - click to flip
-    if (isMobile) {
-      card.addEventListener('click', function() {
-        projectCards.forEach(otherCard => {
-          if (otherCard !== card && otherCard.classList.contains('is-flipped')) {
-            otherCard.classList.remove('is-flipped');
-          }
-        });
-        this.classList.toggle('is-flipped');
-      });
-    } else {
-      // For desktop - hover to flip
-      card.addEventListener('mouseenter', function() {
-        this.classList.add('is-flipped');
-      });
+    // Remove any hover effects, now only click will trigger
+    card.addEventListener('click', function(e) {
+      // Don't flip if clicking on GitHub or external links
+      if (e.target.closest('.project-links')) {
+        e.stopPropagation();
+        return;
+      }
       
-      card.addEventListener('mouseleave', function() {
-        this.classList.remove('is-flipped');
-      });
-    }
+      // Toggle flip class
+      this.classList.toggle('is-flipped');
+    });
+  });
+  
+  // Make sure GitHub links work correctly in project cards
+  const projectLinks = document.querySelectorAll('.project-links a');
+  projectLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent card flip when clicking links
+    });
   });
   
   // Add typing animation to hero section
@@ -245,19 +257,21 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add special effects to flip hints
   const experienceFlipHints = document.querySelectorAll('.experience-card .flip-hint');
   experienceFlipHints.forEach(hint => {
-    // Enhance rotation animation
     const icon = hint.querySelector('i');
     if (icon) {
-      // Apply custom rotation speed
-      icon.style.animationDuration = '4s';
+      // Update the icon for click instead of hover
+      icon.classList.remove('fa-sync-alt');
+      icon.classList.add('fa-chevron-right');
     }
   });
   
   const projectFlipHints = document.querySelectorAll('.project-card .flip-hint');
   projectFlipHints.forEach(hint => {
-    // Enhance pulse animation
+    // Change icon to indicate click action
     const icon = hint.querySelector('i');
     if (icon) {
+      icon.classList.remove('fa-info-circle');
+      icon.classList.add('fa-chevron-up');
       // Apply pulse animation
       icon.style.animationName = 'pulse';
       icon.style.animationDuration = '2s';
@@ -312,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(createParticles, 500);
   
   // Add 3D tilt effect to education cards (desktop only)
-  if (!isMobile) {
+  if (window.innerWidth > 768) {
     const tiltableCards = document.querySelectorAll('.education-card');
     
     tiltableCards.forEach(card => {
@@ -337,12 +351,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Update mobile detection on resize
-  window.addEventListener('resize', function() {
-    const newIsMobile = window.innerWidth <= 768;
-    if (newIsMobile !== isMobile) {
-      // Reload the page to apply new device-specific interactions
-      location.reload();
+  // Close experience details when clicking outside
+  document.addEventListener('click', function(e) {
+    const experienceDetailsContainer = document.getElementById('experienceDetailsContainer');
+    if (experienceDetailsContainer && experienceDetailsContainer.classList.contains('show')) {
+      if (!e.target.closest('.experience-details-card') && !e.target.closest('.experience-card')) {
+        experienceDetailsContainer.classList.remove('show');
+      }
     }
   });
 });
